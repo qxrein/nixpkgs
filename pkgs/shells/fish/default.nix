@@ -15,6 +15,7 @@
   libiconv,
   pcre2,
   pkg-config,
+  sphinx,
   gettext,
   ncurses,
   python3,
@@ -174,6 +175,8 @@ let
       # mounted with the nosuid option.
       ./disable_suid_test.patch
 
+      ./fish_indent_lexer.patch
+
       # We don’t want to run `/usr/libexec/path_helper` on nix-darwin,
       # as it pulls in paths not tracked in the system configuration
       # and messes up the order of `$PATH`. Upstream are unfortunately
@@ -215,6 +218,11 @@ let
 
         # tests/checks/complete.fish
         sed -i 's|/bin/ls|${lib.getExe' coreutils "ls"}|' tests/checks/complete.fish
+
+        # pexpect tests are flaky
+        # See https://github.com/fish-shell/fish-shell/issues/8789
+        rm tests/pexpects/exit_handlers.py
+        rm tests/pexpects/private_mode.py
       ''
       + lib.optionalString stdenv.hostPlatform.isDarwin ''
         # Tests use pkill/pgrep which are currently not built on Darwin
@@ -225,11 +233,6 @@ let
         rm tests/pexpects/signals.py
         rm tests/pexpects/fg.py
       ''
-      + lib.optionalString stdenv.hostPlatform.isLinux ''
-        # pexpect tests are flaky on aarch64-linux (also x86_64-linux)
-        # See https://github.com/fish-shell/fish-shell/issues/8789
-        rm tests/pexpects/exit_handlers.py
-      ''
       + lib.optionalString stdenv.hostPlatform.isAarch64 ''
         # This test seems to consistently fail on aarch64
         rm tests/checks/cd.fish
@@ -239,7 +242,9 @@ let
       "out"
       "doc"
     ];
+
     strictDeps = true;
+
     nativeBuildInputs = [
       cargo
       cmake
@@ -262,6 +267,11 @@ let
       ++ lib.optionals stdenv.hostPlatform.isDarwin [
         "-DMAC_CODESIGN_ID=OFF"
       ];
+
+    preBuild = ''
+      # Avoid warnings when building the manpages about HOME not being writable
+      export HOME=$(mktemp -d)
+    '';
 
     # Fish’s test suite needs to be able to look up process information and send signals.
     sandboxProfile = lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -298,6 +308,7 @@ let
         glibcLocales
         (python3.withPackages (ps: [ ps.pexpect ]))
         procps
+        sphinx
       ]
       ++ lib.optionals stdenv.hostPlatform.isDarwin [
         # For the getconf command, used in default-setup-path.fish
