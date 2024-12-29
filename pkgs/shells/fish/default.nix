@@ -175,8 +175,6 @@ let
       # mounted with the nosuid option.
       ./disable_suid_test.patch
 
-      ./fish_indent_lexer.patch
-
       # We don’t want to run `/usr/libexec/path_helper` on nix-darwin,
       # as it pulls in paths not tracked in the system configuration
       # and messes up the order of `$PATH`. Upstream are unfortunately
