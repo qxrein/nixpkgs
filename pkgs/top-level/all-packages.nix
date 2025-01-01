@@ -8295,6 +8295,8 @@ with pkgs;
 
   pgcli = with pkgs.python3Packages; toPythonApplication pgcli;
 
+  pimsync = callPackage ../applications/misc/pimsync { };
+
   pkgconf-unwrapped = libpkgconf;
 
   pkgconf = callPackage ../build-support/pkg-config-wrapper {
