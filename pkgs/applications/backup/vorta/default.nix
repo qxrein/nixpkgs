@@ -78,8 +78,8 @@ python3Packages.buildPythonApplication rec {
       export QT_QPA_PLATFORM=offscreen
     '';
 
-  doCheck = false;  # Temporarily disable tests
-  
+  doCheck = false; # Temporarily disable tests
+
   meta = with lib; {
     changelog = "https://github.com/borgbase/vorta/releases/tag/v${version}";
     description = "Desktop Backup Client for Borg";
